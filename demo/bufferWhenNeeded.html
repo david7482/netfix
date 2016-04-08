@@ -42,8 +42,8 @@
           requestedSegments[0] = true;
           video.addEventListener('timeupdate', checkBuffer);
           video.addEventListener('canplay', function () {
-            console.log('can play');
             segmentDuration = video.duration / totalSegments;
+            console.log('can play: ', segmentDuration, video.duration, totalSegments);
             video.play();
           });
           video.addEventListener('seeking', seek);
