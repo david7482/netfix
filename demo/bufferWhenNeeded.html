@@ -87,7 +87,7 @@
           console.log('time to fetch next chunk', video.currentTime);
           fetchRange(assetURL, bytesFetched, bytesFetched + segmentLength, appendSegment);
         }
-        //console.log(video.currentTime, currentSegment, segmentDuration);
+        console.log('check buffer: ', video.currentTime, currentSegment, segmentDuration);
       };
 
       function seek (e) {
