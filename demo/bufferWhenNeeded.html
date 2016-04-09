@@ -12,12 +12,12 @@
       // Need to be specific for Blink regarding codecs
       // ./mp4info frag_bunny.mp4 | grep Codec
       var mimeCodec = 'video/mp4; codecs="avc3.420028"';
-      var totalSegments = 3;
+      var totalSegments = 10;
       var segmentLength = 0;
       var segmentDuration = 0;
       var bytesFetched = 0;
       var requestedSegments = [];
-      var videoDuration = 355;
+      var videoDuration = 577;
 
       for (var i = 0; i < totalSegments; ++i) requestedSegments[i] = false;
 
