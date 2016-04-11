@@ -12,7 +12,7 @@
       // Need to be specific for Blink regarding codecs
       // ./mp4info frag_bunny.mp4 | grep Codec
       var mimeCodec = 'video/mp4; codecs="avc1.420028"';
-      var totalSegments = 5;
+      var totalSegments = 10;
       var segmentLength = 0;
       var segmentDuration = 0;
       var bytesFetched = 0;
@@ -111,7 +111,7 @@
       };
 
       function shouldFetchNextSegment (currentSegment) {
-        return video.currentTime > segmentDuration * currentSegment * 0.8 &&
+        return video.currentTime > segmentDuration * currentSegment * 0.6 &&
           !requestedSegments[currentSegment];
       };
     </script>
