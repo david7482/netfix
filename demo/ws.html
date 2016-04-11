@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+    </head>
+    <body>
+        <video controls></video>
+    <script>
+
+    var video = document.querySelector('video');
+
+    var wsURL = 'ws://echo.websocket.org';
+    var wsProtocol = 'client';
+    if ("WebSocket" in window) {
+
+        var ws = new WebSocket(wsURL);
+        ws.binaryType = "arraybuffer";
+
+        ws.onopen = function() {
+            console.log("WebSocket is connected.");
+            createMediaSource();
+        };
+
+        ws.onmessage = function (evt) {
+            if (evt.data instanceof ArrayBuffer) {
+                var video_chunk = new Uint8Array(evt.data);
+                console.log("Got data, size: ", video_chunk.length);
+                sourceBuffer.appendBuffer()
+            }
+        };
+
+        ws.onclose = function() {
+            console.log("WebSocket is closed");
+        };
+
+    } else {
+        console.log("WebSocket is NOT supported");
+    }
+
+    var mimeCodec = 'video/mp4; codecs="avc1.420028"';
+    var mediaSource = null;
+    function createMediaSource() {
+        if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
+            mediaSource = new MediaSource;
+            video.src = URL.createObjectURL(mediaSource);
+            mediaSource.addEventListener('sourceopen', addSourceBuffer);
+        } else {
+            console.error('Unsupported MIME type or codec: ', mimeCodec);
+        }
+
+        console.log("Done with createMediaSource");
+    }
+
+    var sourceBuffer = null;
+    function addSourceBuffer (_) {
+        sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+
+        video.addEventListener('timeupdate', function () {
+            console.log('Current time: ', video.currentTime);
+        });
+        video.addEventListener('canplay', function () {
+            console.log('Got can play event');
+            video.play();
+        });
+
+        console.log("Done with addSourceBuffer");
+    }
+
+</script>
+</body>
+</html>
+
