@@ -11,12 +11,11 @@
 
     var firstData = true;
     var queue = [];
-    var head;
     var sourceBuffer = null;
     var mimeCodec = 'video/mp4; codecs="avc1.42e028"';
     var mediaSource = null;
 
-    var wsURL = 'ws://rocket.umbocv.com:8080/client';
+    var wsURL = 'ws://rocket.umbocv.com:8081/client';
     var wsProtocol = 'client';
     if ("WebSocket" in window) {
 
@@ -35,8 +34,10 @@
                     sourceBuffer.appendBuffer(new Uint8Array(evt.data));
                     firstData = false;
                 } else {
-                    head = new Uint8Array(evt.data);
-//                    queue.push(new Uint8Array(evt.data));
+                    if (queue.length > 0) {
+                        console.log("Got other chunks in queue");
+                    }
+                    queue.push(new Uint8Array(evt.data));
                 }
             }
         };
@@ -70,12 +71,9 @@
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
         //sourceBuffer.mode = 'sequence';
         sourceBuffer.addEventListener('update', function() {
-            //if (queue.length > 0) {
-            if (head) {
+            if (queue.length > 0) {
                 console.log("update");
-                //sourceBuffer.appendBuffer(queue.shift());
-                sourceBuffer.appendBuffer(head);
-                head = null;
+                sourceBuffer.appendBuffer(queue.shift());
             } else {
                 firstData = true;
             }
