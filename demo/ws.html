@@ -68,7 +68,7 @@
     function addSourceBuffer (_) {
 
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-        sourceBuffer.mode = 'sequence';
+        //sourceBuffer.mode = 'sequence';
         sourceBuffer.addEventListener('update', function() {
             //if (queue.length > 0) {
             if (head) {
