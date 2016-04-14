@@ -13,7 +13,7 @@
     var queue = [];
     var head;
     var sourceBuffer = null;
-    var mimeCodec = 'video/mp4; codecs="avc1.420028"';
+    var mimeCodec = 'video/mp4; codecs="avc1.42e028"';
     var mediaSource = null;
 
     var wsURL = 'ws://rocket.umbocv.com:8080/client';
@@ -68,6 +68,7 @@
     function addSourceBuffer (_) {
 
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+        //sourceBuffer.mode = 'sequence';
         sourceBuffer.addEventListener('update', function() {
             //if (queue.length > 0) {
             if (head) {
