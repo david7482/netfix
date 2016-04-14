@@ -9,7 +9,14 @@
 
     var video = document.querySelector('video');
 
-    var wsURL = 'ws://echo.websocket.org';
+    var firstData = true;
+    var queue = [];
+    var head;
+    var sourceBuffer = null;
+    var mimeCodec = 'video/mp4; codecs="avc1.420028"';
+    var mediaSource = null;
+
+    var wsURL = 'ws://rocket.umbocv.com:8080/client';
     var wsProtocol = 'client';
     if ("WebSocket" in window) {
 
@@ -23,22 +30,29 @@
 
         ws.onmessage = function (evt) {
             if (evt.data instanceof ArrayBuffer) {
-                var video_chunk = new Uint8Array(evt.data);
-                console.log("Got data, size: ", video_chunk.length);
-                sourceBuffer.appendBuffer(video_chunk);
+                console.log("evt: ", evt.data);
+                if (firstData) {
+                    sourceBuffer.appendBuffer(new Uint8Array(evt.data));
+                    firstData = false;
+                } else {
+                    head = new Uint8Array(evt.data);
+//                    queue.push(new Uint8Array(evt.data));
+                }
             }
         };
 
-        ws.onclose = function() {
-            console.log("WebSocket is closed");
+        ws.onclose = function(evt) {
+            console.log("WebSocket is closed: ", evt.reason, evt.code);
         };
+        
+        ws.onerror = function (evt) {
+            console.log("WebSocket error: ", evt.data);
+        }
 
     } else {
         console.log("WebSocket is NOT supported");
     }
 
-    var mimeCodec = 'video/mp4; codecs="avc1.420028"';
-    var mediaSource = null;
     function createMediaSource() {
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
             mediaSource = new MediaSource;
@@ -51,9 +65,20 @@
         console.log("Done with createMediaSource");
     }
 
-    var sourceBuffer = null;
     function addSourceBuffer (_) {
+
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+        sourceBuffer.addEventListener('update', function() {
+            //if (queue.length > 0) {
+            if (head) {
+                console.log("update");
+                //sourceBuffer.appendBuffer(queue.shift());
+                sourceBuffer.appendBuffer(head);
+                head = null;
+            } else {
+                firstData = true;
+            }
+        });
 
         video.addEventListener('timeupdate', function () {
             console.log('Current time: ', video.currentTime);
