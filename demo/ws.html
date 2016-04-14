@@ -30,7 +30,7 @@
 
         ws.onmessage = function (evt) {
             if (evt.data instanceof ArrayBuffer) {
-                console.log("evt: ", evt.data);
+                console.log("evt: ", evt.data.byteLength);
                 if (firstData) {
                     sourceBuffer.appendBuffer(new Uint8Array(evt.data));
                     firstData = false;
