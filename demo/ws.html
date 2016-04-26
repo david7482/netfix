@@ -17,42 +17,8 @@
 
     var wsURL = 'ws://rocket.umbocv.com:8080/client';
     var wsProtocol = 'client';
-    if ("WebSocket" in window) {
 
-        var ws = new WebSocket(wsURL);
-        ws.binaryType = "arraybuffer";
-
-        ws.onopen = function() {
-            console.log("WebSocket is connected.");
-            createMediaSource();
-        };
-
-        ws.onmessage = function (evt) {
-            if (evt.data instanceof ArrayBuffer) {
-                console.log("evt: ", evt.data.byteLength);
-                if (firstData) {
-                    sourceBuffer.appendBuffer(new Uint8Array(evt.data));
-                    firstData = false;
-                } else {
-                    if (queue.length > 0) {
-                        console.log("Got other chunks in queue");
-                    }
-                    queue.push(new Uint8Array(evt.data));
-                }
-            }
-        };
-
-        ws.onclose = function(evt) {
-            console.log("WebSocket is closed: ", evt.reason, evt.code);
-        };
-        
-        ws.onerror = function (evt) {
-            console.log("WebSocket error: ", evt.data);
-        }
-
-    } else {
-        console.log("WebSocket is NOT supported");
-    }
+    createMediaSource();
 
     function createMediaSource() {
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
@@ -88,6 +54,36 @@
         });
 
         console.log("Done with addSourceBuffer");
+
+        var ws = new WebSocket(wsURL);
+        ws.binaryType = "arraybuffer";
+
+        ws.onopen = function() {
+            console.log("WebSocket is connected.");
+        };
+
+        ws.onmessage = function (evt) {
+            if (evt.data instanceof ArrayBuffer) {
+                console.log("evt: ", evt.data.byteLength);
+                if (firstData) {
+                    sourceBuffer.appendBuffer(new Uint8Array(evt.data));
+                    firstData = false;
+                } else {
+                    if (queue.length > 0) {
+                        console.log("Got other chunks in queue");
+                    }
+                    queue.push(new Uint8Array(evt.data));
+                }
+            }
+        };
+
+        ws.onclose = function(evt) {
+            console.log("WebSocket is closed: ", evt.reason, evt.code);
+        };
+
+        ws.onerror = function (evt) {
+            console.log("WebSocket error: ", evt.data);
+        }
     }
 
 </script>
