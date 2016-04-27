@@ -4,6 +4,9 @@
         <meta charset="utf-8"/>
     </head>
     <body>
+        <div id="time"></div>
+        <div id="current"></div>
+        <div id="buffered"></div>
         <video controls></video>
     <script>
 
@@ -14,9 +17,14 @@
     var sourceBuffer = null;
     var mimeCodec = 'video/mp4; codecs="avc1.42e028"';
     var mediaSource = null;
+    var startTime = (new Date()).getTime();
+    var stopTimer = function () {
+        console.log('Got playing event');
+        document.getElementById('time').innerHTML = '' + ((new Date()).getTime() - startTime) + ' ms';
+        video.removeEventListener('playing', stopTimer);
+    };
 
     var wsURL = 'ws://rocket.umbocv.com:8080/client';
-    var wsProtocol = 'client';
 
     createMediaSource();
 
@@ -24,6 +32,7 @@
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
             mediaSource = new MediaSource;
             video.src = URL.createObjectURL(mediaSource);
+            video.addEventListener('playing', stopTimer);
             mediaSource.addEventListener('sourceopen', addSourceBuffer);
         } else {
             console.error('Unsupported MIME type or codec: ', mimeCodec);
@@ -46,7 +55,13 @@
         });
 
         video.addEventListener('timeupdate', function () {
-            console.log('Current time: ', video.currentTime);
+            document.getElementById('current').innerHTML = '' + 'Current time: ' + video.currentTime;
+
+            var bufferedRange = sourceBuffer.buffered;
+            document.getElementById('buffered').innerHTML = '';
+            for (var i = 0; i < bufferedRange.length; i++) {
+                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + '\n';
+            }
         });
         video.addEventListener('canplay', function () {
             console.log('Got can play event');
