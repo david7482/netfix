@@ -4,7 +4,12 @@
         <meta charset="utf-8"/>
     </head>
     <body>
-        <div id="time"></div>
+        <div id="media_source"></div>
+        <div id="ws"></div>
+        <div id="init_frag"></div>
+        <div id="first_frame"></div>
+        <div id="total"></div>
+        <br>
         <div id="current"></div>
         <div id="buffered"></div>
         <video controls></video>
@@ -17,10 +22,25 @@
     var sourceBuffer = null;
     var mimeCodec = 'video/mp4; codecs="avc1.42e028"';
     var mediaSource = null;
-    var startTime = (new Date()).getTime();
+
+    var mediaSourceCreateStartTime = 0, mediaSourceCreateEndTime = 0;
+    var wsConnectStartTime = 0, wsConnectEndTime = 0;
+    var initFragmentStartTime = 0, initFragmentEndTime = 0;
+    var firstFrameShowStartTime = 0, firstFrameShowEndTime = 0;
+
+    var totalStartTime = (new Date()).getTime();
     var stopTimer = function () {
-        console.log('Got playing event');
-        document.getElementById('time').innerHTML = '' + ((new Date()).getTime() - startTime) + ' ms';
+
+        firstFrameShowEndTime = (new Date()).getTime();
+        document.getElementById('first_frame').innerHTML = 'First frame decode/render Time: ' + (firstFrameShowEndTime - firstFrameShowStartTime) + ' ms';
+
+        var sum = (mediaSourceCreateEndTime - mediaSourceCreateStartTime) +
+                  (wsConnectEndTime - wsConnectStartTime) +
+                  (initFragmentEndTime - initFragmentStartTime) +
+                  (firstFrameShowEndTime - firstFrameShowStartTime);
+
+        document.getElementById('total').innerHTML = 'Total: ' + ((new Date()).getTime() - totalStartTime) + ' ms (' + sum + ')';
+
         video.removeEventListener('playing', stopTimer);
     };
 
@@ -31,6 +51,7 @@
     function createMediaSource() {
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
             mediaSource = new MediaSource;
+            mediaSourceCreateStartTime = (new Date()).getTime();
             video.src = URL.createObjectURL(mediaSource);
             video.addEventListener('playing', stopTimer);
             mediaSource.addEventListener('sourceopen', addSourceBuffer);
@@ -42,6 +63,9 @@
     }
 
     function addSourceBuffer (_) {
+
+        mediaSourceCreateEndTime = (new Date()).getTime();
+        document.getElementById('media_source').innerHTML = 'MediaSource Create Time: ' + (mediaSourceCreateEndTime - mediaSourceCreateStartTime) + ' ms';
 
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
         sourceBuffer.mode = 'sequence';
@@ -60,7 +84,7 @@
             var bufferedRange = sourceBuffer.buffered;
             document.getElementById('buffered').innerHTML = '';
             for (var i = 0; i < bufferedRange.length; i++) {
-                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + '\n';
+                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + '</br>';
             }
         });
         video.addEventListener('canplay', function () {
@@ -72,12 +96,21 @@
 
         var ws = new WebSocket(wsURL);
         ws.binaryType = "arraybuffer";
+        wsConnectStartTime = (new Date()).getTime();
 
         ws.onopen = function() {
-            console.log("WebSocket is connected.");
+            wsConnectEndTime = (new Date()).getTime();
+            initFragmentStartTime = (new Date()).getTime();
+            document.getElementById('ws').innerHTML = 'WS Connect Time: ' + (wsConnectEndTime - wsConnectStartTime) + ' ms';
         };
 
         ws.onmessage = function (evt) {
+            if (initFragmentEndTime === 0) {
+                initFragmentEndTime = (new Date()).getTime();
+                firstFrameShowStartTime = (new Date()).getTime();
+                document.getElementById('init_frag').innerHTML = 'Wait Init Fragment Time: ' + (initFragmentEndTime - initFragmentStartTime) + ' ms';
+            }
+
             if (evt.data instanceof ArrayBuffer) {
                 console.log("evt: ", evt.data.byteLength);
                 if (firstData) {
