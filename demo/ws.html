@@ -12,12 +12,23 @@
         <br>
         <div id="current"></div>
         <div id="buffered"></div>
+        <br>
+        <button id="live">LIVE</button>
+        <br>
         <video width="1280" height="720" controls></video>
     <script>
 
     var video = document.querySelector('video');
 
-    var firstData = true;
+    var live = document.getElementById('live');
+    live.disabled = true;
+    live.onclick = function () {
+        if (video.currentTime != 0) {
+            video.currentTime = sourceBuffer.buffered.end(0);
+        }
+    };
+
+    var needData = true;
     var queue = [];
     var sourceBuffer = null;
     var mimeCodec = 'video/mp4; codecs="avc1.42e028"';
@@ -74,22 +85,17 @@
                 console.log("update");
                 sourceBuffer.appendBuffer(queue.shift());
             } else {
-                firstData = true;
+                needData = true;
             }
         });
 
         video.addEventListener('timeupdate', function () {
             document.getElementById('current').innerHTML = '' + 'Current time: ' + video.currentTime;
-
-            var bufferedRange = sourceBuffer.buffered;
-            document.getElementById('buffered').innerHTML = '';
-            for (var i = 0; i < bufferedRange.length; i++) {
-                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + '</br>';
-            }
         });
         video.addEventListener('canplay', function () {
             console.log('Got can play event');
             video.play();
+            live.disabled = false;
         });
 
         console.log("Done with addSourceBuffer");
@@ -113,9 +119,9 @@
 
             if (evt.data instanceof ArrayBuffer) {
                 console.log("evt: ", evt.data.byteLength);
-                if (firstData) {
+                if (needData) {
                     sourceBuffer.appendBuffer(new Uint8Array(evt.data));
-                    firstData = false;
+                    needData = false;
                 } else {
                     if (queue.length > 0) {
                         console.log("Got other chunks in queue");
@@ -123,6 +129,13 @@
                     queue.push(new Uint8Array(evt.data));
                 }
             }
+
+            var bufferedRange = sourceBuffer.buffered;
+            document.getElementById('buffered').innerHTML = '';
+            for (var i = 0; i < bufferedRange.length; i++) {
+                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i);
+            }
+
         };
 
         ws.onclose = function(evt) {
