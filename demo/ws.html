@@ -12,6 +12,7 @@
         <br>
         <div id="current"></div>
         <div id="buffered"></div>
+        <div id="frag_wait"></div>
         <br>
         <button id="live">LIVE</button>
         <br>
@@ -38,6 +39,9 @@
     var wsConnectStartTime = 0, wsConnectEndTime = 0;
     var initFragmentStartTime = 0, initFragmentEndTime = 0;
     var firstFrameShowStartTime = 0, firstFrameShowEndTime = 0;
+
+    var totalFragWaitTime = 0, totalFragWaitTimeCount = 0;
+    var prevFragTimestamp = 0;
 
     var totalStartTime = (new Date()).getTime();
     var stopTimer = function () {
@@ -117,6 +121,13 @@
                 document.getElementById('init_frag').innerHTML = 'Wait Init Fragment Time: ' + (initFragmentEndTime - initFragmentStartTime) + ' ms';
             }
 
+            if (prevFragTimestamp != 0) {
+                var instantFragWait = (new Date()).getTime() - prevFragTimestamp;
+                totalFragWaitTime += instantFragWait;
+                var avg = Math.round(totalFragWaitTime / totalFragWaitTimeCount);
+                document.getElementById('frag_wait').innerHTML = 'Instantaneous Fragment Wait: ' + instantFragWait + ' ms, Avg Fragment Wait: ' + avg + 'ms';
+            }
+
             if (evt.data instanceof ArrayBuffer) {
                 console.log("evt: ", evt.data.byteLength);
                 if (needData) {
@@ -136,6 +147,8 @@
                 document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i);
             }
 
+            prevFragTimestamp = (new Date()).getTime();
+            totalFragWaitTimeCount += 1;
         };
 
         ws.onclose = function(evt) {
