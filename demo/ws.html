@@ -155,10 +155,10 @@
             if (video.currentTime != 0 && !video.paused) {
                 var buffered_time = (bufferedRange.end(0) - video.currentTime);
                 if (buffered_time < 1) {
-                    console.log("Not enough buffered time. Make it pause 1000ms then auto replay");
+                    console.log("Not enough buffered time. Make it pause 500 ms then auto replay");
                     setTimeout(function () {
                         video.play();
-                    }, 1000);
+                    }, 500);
                     video.pause();
                 } else if (buffered_time > 2) {
                     console.log("Too much buffered time which cause latency. Just jump to live");
