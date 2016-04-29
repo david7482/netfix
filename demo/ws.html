@@ -152,7 +152,7 @@
                 document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + ', buffer lead time: ' + (bufferedRange.end(i) - video.currentTime).toFixed(2) + 'sec';
             }
 
-            if (video.currentTime != 0) {
+            if (video.currentTime != 0 && !video.paused) {
                 var buffered_time = (bufferedRange.end(0) - video.currentTime);
                 if (buffered_time < 1) {
                     console.log("Not enough buffered time. Make it pause 1000ms then auto replay");
@@ -167,7 +167,7 @@
                     //console.log("Too much buffered time which cause latency. Speed up the playback rate");
                     //video.playbackRate = 1.2
                 } else if (video.playbackRate !== 1) {
-                    video.playbackRate = 1
+                    //video.playbackRate = 1
                 }
 
                 document.getElementById('rate').innerHTML = 'Playback Rate: ' + video.playbackRate;
