@@ -40,7 +40,7 @@
     var initFragmentStartTime = 0, initFragmentEndTime = 0;
     var firstFrameShowStartTime = 0, firstFrameShowEndTime = 0;
 
-    var totalFragWaitTime = 0, totalFragWaitTimeCount = 0;
+    var maxFragWaitTime = 0, totalFragWaitTime = 0, totalFragWaitTimeCount = 0;
     var prevFragTimestamp = 0;
 
     var totalStartTime = (new Date()).getTime();
@@ -94,7 +94,7 @@
         });
 
         video.addEventListener('timeupdate', function () {
-            document.getElementById('current').innerHTML = '' + 'Current time: ' + video.currentTime;
+            document.getElementById('current').innerHTML = '' + 'Current time: ' + video.currentTime + 'sec';
         });
         video.addEventListener('canplay', function () {
             console.log('Got can play event');
@@ -123,9 +123,13 @@
 
             if (prevFragTimestamp != 0) {
                 var instantFragWait = (new Date()).getTime() - prevFragTimestamp;
+                if (instantFragWait > maxFragWaitTime) maxFragWaitTime = instantFragWait;
                 totalFragWaitTime += instantFragWait;
                 var avg = Math.round(totalFragWaitTime / totalFragWaitTimeCount);
-                document.getElementById('frag_wait').innerHTML = 'Instantaneous Fragment Wait: ' + instantFragWait + ' ms, Avg Fragment Wait: ' + avg + 'ms';
+
+                document.getElementById('frag_wait').innerHTML =
+                        'Instantaneous Fragment Wait: ' + instantFragWait + ' ms (max: ' + maxFragWaitTime + '), ' +
+                        'Avg Fragment Wait: ' + avg + 'ms';
             }
 
             if (evt.data instanceof ArrayBuffer) {
@@ -144,7 +148,7 @@
             var bufferedRange = sourceBuffer.buffered;
             document.getElementById('buffered').innerHTML = '';
             for (var i = 0; i < bufferedRange.length; i++) {
-                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i);
+                document.getElementById('buffered').innerHTML += '' + 'Buffer(' + i +'): ' + bufferedRange.start(i) + ' - ' + bufferedRange.end(i) + ', buffer lead time: ' + (bufferedRange.end(i) - video.currentTime).toFixed(2) + 'sec';
             }
 
             prevFragTimestamp = (new Date()).getTime();
