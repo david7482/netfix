@@ -31,7 +31,8 @@
     }
 
     var sourceBuffer = null;
-    function sourceOpen (_) {
+
+    function sourceOpen(_) {
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
         sourceBuffer.mode = 'sequence';
         getFileLength(assetURL, function (fileLength) {
@@ -50,7 +51,7 @@
         });
     };
 
-    function getFileLength (url, cb) {
+    function getFileLength(url, cb) {
         var xhr = new XMLHttpRequest;
         xhr.open('head', url);
         xhr.onload = function () {
@@ -59,7 +60,7 @@
         xhr.send();
     };
 
-    function fetchRange (url, start, end, cb) {
+    function fetchRange(url, start, end, cb) {
         var xhr = new XMLHttpRequest;
         xhr.open('get', url);
         xhr.responseType = 'arraybuffer';
@@ -72,11 +73,11 @@
         xhr.send();
     };
 
-    function appendSegment (chunk) {
+    function appendSegment(chunk) {
         sourceBuffer.appendBuffer(chunk);
     };
 
-    function checkBuffer (_) {
+    function checkBuffer(_) {
         var currentSegment = getCurrentSegment();
         if (currentSegment === totalSegments && haveAllSegments()) {
             console.log('last segment', mediaSource.readyState);
@@ -90,7 +91,7 @@
         //console.log(video.currentTime, currentSegment, segmentDuration);
     };
 
-    function seek (e) {
+    function seek(e) {
         console.log(e);
         if (mediaSource.readyState === 'open') {
             sourceBuffer.abort();
@@ -101,15 +102,17 @@
         }
     };
 
-    function getCurrentSegment () {
+    function getCurrentSegment() {
         return ((video.currentTime / segmentDuration) | 0) + 1;
     };
 
-    function haveAllSegments () {
-        return requestedSegments.every(function (val) { return !!val; });
+    function haveAllSegments() {
+        return requestedSegments.every(function (val) {
+            return !!val;
+        });
     };
 
-    function shouldFetchNextSegment (currentSegment) {
+    function shouldFetchNextSegment(currentSegment) {
         return video.currentTime > segmentDuration * currentSegment * 0.8 &&
             !requestedSegments[currentSegment];
     };
