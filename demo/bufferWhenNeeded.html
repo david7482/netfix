@@ -34,7 +34,7 @@
 
     function sourceOpen(_) {
         sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-        sourceBuffer.mode = 'sequence';
+        //sourceBuffer.mode = 'sequence';
         getFileLength(assetURL, function (fileLength) {
             console.log((fileLength / 1024 / 1024).toFixed(2), 'MB');
             //totalLength = fileLength;
